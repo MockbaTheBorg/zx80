@@ -2,7 +2,7 @@
 #define TOKEN_H
 
 // define the maximum length of the token
-#define MAX_TOKEN_LENGTH 32
+#define MAX_TOKEN_LENGTH 512
 
 // enumerate the token types
 enum tokenTypes {
@@ -49,6 +49,7 @@ enum errorCodes {
 	ERROR_UNBALANCED_QUOTE,
 	ERROR_OUT_OF_MEMORY,
 	ERROR_STACK_UNDERFLOW,
+	ERROR_UNKNOWN_OPERATOR,
 	ERROR_SYNTAX
 };
 
@@ -64,6 +65,7 @@ char *errorMessages[] = {"No error",
 						 "Unbalanced quotes",
 						 "Out of memory",
 						 "Stack underflow",
+						 "Unknown operator",
 						 "Syntax error"};
 
 // return the error message for the given error code
@@ -139,7 +141,7 @@ int pushToken(tokenStack **stack, char *token, int type) {
 }
 
 // pop a token from the stack
-int popToken(tokenStack **stack, char *token) {
+int popToken(tokenStack **stack, char *token, int* type) {
 	tokenStack *nextNode;
 	// if the stack is empty, return an error
 	if (*stack == NULL) {
@@ -147,6 +149,7 @@ int popToken(tokenStack **stack, char *token) {
 	}
 	// copy the token from the top of the stack
 	strcpy(token, (*stack)->token);
+	*type = (*stack)->type;
 	// pop the top node off the stack
 	nextNode = (*stack)->next;
 	free((*stack)->token);
@@ -261,7 +264,7 @@ int pTokenValid6() {
 }
 
 // function to get the next token from the input string
-int nextToken(char *expr, int *type, char *token) {
+int nextToken(char *expr, char *token, int *type) {
 	int pToken = 0;
 	int dCount = 0;
 	token[0]   = '\0';
@@ -444,7 +447,7 @@ int tokenize(char *expr, tokenStack **tokens) {
 	// initialize the stack
 	*tokens = NULL;
 	// tokenize the expression
-	while ((error = nextToken(expr, &type, token)) == ERROR_NONE && type != TOKEN_END) {
+	while ((error = nextToken(expr, token, &type)) == ERROR_NONE && type != TOKEN_END) {
 		// append the token to the stack
 		error = appendToken(tokens, token, type);
 
